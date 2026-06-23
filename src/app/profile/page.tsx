@@ -9,6 +9,57 @@ interface ProfileData {
   shoeSize: string;
 }
 
+function getHairColorClass(color: string): string {
+  const colors: Record<string, string> = {
+    black: 'bg-gray-900',
+    brown: 'bg-amber-900',
+    blonde: 'bg-yellow-400',
+    red: 'bg-red-600',
+    gray: 'bg-gray-400',
+    white: 'bg-gray-100 border-2 border-gray-300',
+    other: 'bg-purple-500',
+  };
+  return colors[color] || 'bg-gray-900';
+}
+
+function Avatar({ data }: { data: ProfileData }) {
+  const hairColor = getHairColorClass(data.hairColor);
+  const height = parseInt(data.height);
+  const scale = Math.min(Math.max(height / 180, 0.8), 1.2);
+  const shoeSize = parseInt(data.shoeSize);
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div
+        className="relative flex flex-col items-center"
+        style={{ transform: `scale(${scale})` }}
+      >
+        <div className="flex flex-col items-center gap-2">
+          <div
+            className={`${hairColor} w-16 h-20 rounded-t-full rounded-b-2xl`}
+          />
+          <div className="w-14 h-20 bg-gradient-to-b from-orange-200 to-orange-100 rounded-sm" />
+          <div className="flex gap-3">
+            <div className={`w-5 h-10 ${shoeSize > 45 ? 'bg-gray-800' : 'bg-gray-700'} rounded`} />
+            <div className={`w-5 h-10 ${shoeSize > 45 ? 'bg-gray-800' : 'bg-gray-700'} rounded`} />
+          </div>
+        </div>
+
+        <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 text-4xl">
+          😊
+        </div>
+      </div>
+
+      <div className="text-center">
+        <p className="text-2xl font-bold text-gray-800">{data.firstName}</p>
+        <p className="text-sm text-gray-500 mt-1">
+          {height} cm • Pointure {data.shoeSize}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const [formData, setFormData] = useState<ProfileData>({
     firstName: '',
@@ -138,37 +189,37 @@ export default function ProfilePage() {
           </div>
         ) : (
           <div className="bg-white rounded-2xl shadow-lg p-8">
-            <div className="text-center mb-8">
-              <div className="text-5xl mb-4">✨</div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Profil enregistré!</h1>
-              <p className="text-gray-600">Voici vos informations</p>
-            </div>
+            <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">Votre Avatar</h1>
 
-            <div className="space-y-4 mb-8 bg-gray-50 rounded-lg p-6">
-              <div className="flex justify-between items-center border-b pb-3">
-                <span className="text-gray-600 font-semibold">Prénom:</span>
-                <span className="text-gray-800 font-medium">{formData.firstName}</span>
-              </div>
-              <div className="flex justify-between items-center border-b pb-3">
-                <span className="text-gray-600 font-semibold">Taille:</span>
-                <span className="text-gray-800 font-medium">{formData.height} cm</span>
-              </div>
-              <div className="flex justify-between items-center border-b pb-3">
-                <span className="text-gray-600 font-semibold">Couleur de cheveux:</span>
-                <span className="text-gray-800 font-medium capitalize">{formData.hairColor}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 font-semibold">Pointure:</span>
-                <span className="text-gray-800 font-medium">{formData.shoeSize}</span>
-              </div>
-            </div>
+            <div className="flex flex-col items-center gap-8">
+              <Avatar data={formData} />
 
-            <button
-              onClick={handleReset}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition transform hover:scale-105"
-            >
-              Recommencer
-            </button>
+              <div className="w-full space-y-3 bg-gray-50 rounded-lg p-6">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 font-semibold">Prénom:</span>
+                  <span className="text-gray-800 font-medium">{formData.firstName}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 font-semibold">Taille:</span>
+                  <span className="text-gray-800 font-medium">{formData.height} cm</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 font-semibold">Couleur de cheveux:</span>
+                  <span className="text-gray-800 font-medium capitalize">{formData.hairColor}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 font-semibold">Pointure:</span>
+                  <span className="text-gray-800 font-medium">{formData.shoeSize}</span>
+                </div>
+              </div>
+
+              <button
+                onClick={handleReset}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition transform hover:scale-105"
+              >
+                Recommencer
+              </button>
+            </div>
           </div>
         )}
       </div>
