@@ -1,11 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Report, ReportDocument, ReportSection, ReportWithRelations } from './types';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase configuration is missing. Check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.');
+  }
+
+  return createClient(supabaseUrl, supabaseKey);
+}
 
 export async function getReports(organizationId: string): Promise<Report[]> {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('reports')
     .select('*')
@@ -17,6 +25,7 @@ export async function getReports(organizationId: string): Promise<Report[]> {
 }
 
 export async function getReportById(reportId: string): Promise<ReportWithRelations | null> {
+  const supabase = getSupabaseClient();
   const { data: report, error: reportError } = await supabase
     .from('reports')
     .select('*')
@@ -59,6 +68,7 @@ export async function createReport(
     metadata?: Record<string, unknown>;
   }
 ): Promise<Report> {
+  const supabase = getSupabaseClient();
   const { data: report, error } = await supabase
     .from('reports')
     .insert([
@@ -79,6 +89,7 @@ export async function updateReport(
   reportId: string,
   updates: Partial<Report>
 ): Promise<Report> {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('reports')
     .update({
@@ -94,6 +105,7 @@ export async function updateReport(
 }
 
 export async function deleteReport(reportId: string): Promise<void> {
+  const supabase = getSupabaseClient();
   const { error } = await supabase
     .from('reports')
     .delete()
@@ -111,6 +123,7 @@ export async function addDocument(
     file_size: number;
   }
 ): Promise<ReportDocument> {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('report_documents')
     .insert([
@@ -127,6 +140,7 @@ export async function addDocument(
 }
 
 export async function deleteDocument(documentId: string): Promise<void> {
+  const supabase = getSupabaseClient();
   const { error } = await supabase
     .from('report_documents')
     .delete()
@@ -144,6 +158,7 @@ export async function addSection(
     order: number;
   }
 ): Promise<ReportSection> {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('report_sections')
     .insert([
@@ -163,6 +178,7 @@ export async function updateSection(
   sectionId: string,
   updates: Partial<ReportSection>
 ): Promise<ReportSection> {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('report_sections')
     .update({
@@ -178,6 +194,7 @@ export async function updateSection(
 }
 
 export async function deleteSection(sectionId: string): Promise<void> {
+  const supabase = getSupabaseClient();
   const { error } = await supabase
     .from('report_sections')
     .delete()

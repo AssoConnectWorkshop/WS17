@@ -2,12 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { addDocument } from '@/lib/reports';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase configuration is missing.');
+  }
+
+  return createClient(supabaseUrl, supabaseKey);
+}
 
 const ALLOWED_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,6 +54,7 @@ export async function POST(request: NextRequest) {
     const filename = file.name.replace(/[^a-z0-9.-]/gi, '_').toLowerCase();
     const storagePath = `reports/${reportId}/${Date.now()}-${filename}`;
 
+    const supabase = getSupabaseClient();
     const { error: uploadError } = await supabase.storage
       .from('reports')
       .upload(storagePath, buffer, {
