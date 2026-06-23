@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import SectionSelector from '@/app/components/SectionSelector';
+import type { ReportSectionType } from '@/lib/types';
 
 export default function CreateReportPage() {
   const router = useRouter();
@@ -15,6 +17,11 @@ export default function CreateReportPage() {
     period_to: '',
     template_type: 'activity' as const,
   });
+
+  const [selectedSections, setSelectedSections] = useState<ReportSectionType[]>([
+    'summary',
+    'members',
+  ]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -50,6 +57,26 @@ export default function CreateReportPage() {
       if (!response.ok) throw new Error('Failed to create report');
 
       const report = await response.json();
+
+      // Create sections
+      for (let i = 0; i < selectedSections.length; i++) {
+        const sectionType = selectedSections[i];
+        const sectionResponse = await fetch(`/api/reports/${report.id}/sections`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            section_type: sectionType,
+            order: i,
+          }),
+        });
+
+        if (!sectionResponse.ok) {
+          console.error('Failed to create section:', sectionType);
+        }
+      }
+
       router.push(`/reports/${report.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -160,6 +187,13 @@ export default function CreateReportPage() {
                 <option value="annual">Rapport annuel</option>
                 <option value="membership">Rapport d&apos;adhésion</option>
               </select>
+            </div>
+
+            <div className="border-t pt-6">
+              <SectionSelector
+                selectedSections={selectedSections}
+                onChange={setSelectedSections}
+              />
             </div>
 
             <div className="flex gap-4 pt-6">
