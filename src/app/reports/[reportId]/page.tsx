@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import type { ReportWithRelations } from '@/lib/types';
+import DocumentUpload from '@/app/components/DocumentUpload';
+import DocumentList from '@/app/components/DocumentList';
+import type { ReportWithRelations, ReportDocument } from '@/lib/types';
 
 export default function ReportDetailPage() {
   const params = useParams();
@@ -13,6 +15,7 @@ export default function ReportDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [documents, setDocuments] = useState<(ReportDocument & { url?: string })[]>([]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -28,6 +31,7 @@ export default function ReportDetailPage() {
 
         const data = await response.json();
         setReport(data);
+        setDocuments(data.documents || []);
         setFormData({
           title: data.title,
           description: data.description || '',
@@ -81,6 +85,14 @@ export default function ReportDetailPage() {
     } finally {
       setUpdating(false);
     }
+  };
+
+  const handleUploadComplete = (document: ReportDocument & { url: string }) => {
+    setDocuments([...documents, document]);
+  };
+
+  const handleDeleteDocument = (documentId: string) => {
+    setDocuments(documents.filter((doc) => doc.id !== documentId));
   };
 
   const formatDate = (date: string) => {
@@ -188,11 +200,18 @@ export default function ReportDetailPage() {
               </div>
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="border-t pt-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Documents</h2>
+              <div className="space-y-4">
+                <DocumentUpload reportId={reportId} onUploadComplete={handleUploadComplete} />
+                <DocumentList documents={documents} onDelete={handleDeleteDocument} />
+              </div>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-lg border-t">
               <h3 className="font-medium text-gray-900 mb-2">Informations du rapport</h3>
               <div className="space-y-2 text-sm text-gray-600">
                 <p>Type: {report.template_type}</p>
-                <p>Documents joints: {report.documents.length}</p>
                 <p>Sections: {report.sections.length}</p>
                 <p>Créé le: {formatDate(report.created_at)}</p>
               </div>
